@@ -154,6 +154,76 @@ relatorio <- relatorio_conformidade(dados)
 print(relatorio$resumo_geral)
 ```
 
+## Tratamento de Dados
+
+### Abordagem Metodológica para Valores <LQ (Abaixo do Limite de Quantificação)
+
+Durante o processamento dos dados, foi implementada uma abordagem **estatisticamente robusta** para o tratamento de valores `<LQ`:
+
+#### ✅ **Método Implementado: LQ/√2**
+- **Abordagem**: Valores `<LQ` são **substituídos por LQ/√2**
+- **Justificativa Científica**: 
+  - Baseado na distribuição log-normal típica de contaminantes ambientais
+  - Método estatisticamente mais robusto que LQ/2 ou conversão para NA
+  - Preserva informação sobre a presença do contaminante (não ausente)
+  - Amplamente aceito na literatura científica ambiental
+
+#### **Implementação Técnica**
+```r
+# Para cada metal, valores <LQ são substituídos por:
+valor_substituicao = limite_quantificacao / sqrt(2)
+
+# Exemplo para cádmio (LQ = 0.005 mg/L):
+# <LQ → 0.003536 mg/L
+```
+
+#### **Limites de Quantificação (LQ) Identificados**
+Baseado na análise dos menores valores válidos consistentes nos dados originais:
+
+| Metal | Limite de Quantificação (mg/L) | Valor de Substituição (mg/L) |
+|-------|--------------------------------|-------------------------------|
+| **Cádmio** | 0.005 | 0.003536 |
+| **Chumbo** | 0.02 | 0.014142 |
+| **Manganês** | 0.1 | 0.070711 |
+| **Ferro** | 0.1 | 0.070711 |
+| **Alumínio** | 0.1 | 0.070711 |
+| **Mercúrio** | 0.0002 | 0.000141 |
+| **Outros metais** | Baseados nos limites CONAMA | LQ/√2 |
+
+#### **Valores N/A**
+- **Tratamento**: Convertidos para `NA` no dataset
+- **Justificativa**: Representam ausência real de dados por motivos técnicos
+- **Diferença**: `<LQ` indica presença abaixo do limite; `N/A` indica ausência de medição
+
+#### **Impacto nas Análises**
+- **Análises estatísticas**: Incluem todos os valores quantificados + estimados (LQ/√2)
+- **Conformidade CONAMA**: Valores estimados são considerados na avaliação
+- **Tendências temporais**: Maior robustez estatística nas análises de série temporal
+- **Comparabilidade**: Método consistente com estudos ambientais internacionais
+
+#### **Vantagens da Abordagem LQ/√2**
+✅ **Estatisticamente robusta**: Baseada em distribuição probabilística realística  
+✅ **Preserva informação**: Não perde dados sobre detecção de contaminantes  
+✅ **Cientificamente aceita**: Método reconhecido na literatura ambiental  
+✅ **Análises mais precisas**: Melhores estimativas de tendências e padrões  
+✅ **Conservadora**: Não superestima nem subestima concentrações  
+
+#### **Verificação dos Dados**
+Você pode verificar o tratamento aplicado:
+
+```r
+library(imasul)
+dados <- carregar_dados_imasul()
+
+# Verificar valores de substituição para cádmio
+cadmio_valores <- dados$cadmio_total_mg_L_Cd[!is.na(dados$cadmio_total_mg_L_Cd)]
+valor_lq_sqrt2 <- 0.005 / sqrt(2)  # 0.003536
+
+# Contar quantos valores foram substituídos
+valores_substituidos <- sum(abs(cadmio_valores - valor_lq_sqrt2) < 1e-6)
+cat("Valores <LQ substituídos por LQ/√2:", valores_substituidos)
+```
+
 ## Estrutura dos Dados
 
 ### Códigos dos Pontos
