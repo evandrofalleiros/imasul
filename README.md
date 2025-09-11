@@ -105,14 +105,15 @@ pontos <- mapear_pontos(dados_completos, "cadmio_total_mg_L_Cd")
 
 # Usar com leaflet para mapa interativo
 library(leaflet)
-leaflet(pontos) %>%
-  addTiles() %>%
-  addCircleMarkers(
-    lng = ~longitude, 
-    lat = ~latitude,
-    radius = ~sqrt(media_cadmio_total_mg_L_Cd) * 10,
-    popup = ~paste(codigo_imasul, "<br>", DESCRICAO_DO_LOCAL)
-  )
+mapa <- leaflet(pontos)
+mapa <- addTiles(mapa)
+mapa <- addCircleMarkers(
+  mapa,
+  lng = ~longitude, 
+  lat = ~latitude,
+  radius = ~sqrt(media_cadmio_total_mg_L_Cd) * 10,
+  popup = ~paste(codigo_imasul, "<br>", DESCRICAO_DO_LOCAL)
+)
 ```
 
 ## Exemplo de Uso Completo
@@ -210,38 +211,12 @@ citation("imasul")
 - **Autor**: Evandro Falleiros
 - **Email**: evandro.falleiros@ifms.edu.br
 - **GitHub**: [https://github.com/evandrofalleiros/imasul](https://github.com/evandrofalleiros/imasul)
-pontos <- mapear_pontos(dados, "cadmio_total_mg_L_Cd")
-```
-
-### Relatório Completo
-```r
-# Gerar relatório de conformidade
-relatorio <- relatorio_conformidade(dados)
-```
-
-## Metais Monitorados
-
-- Alumínio (Al)
-- Bário (Ba)
-- Cádmio (Cd)
-- Chumbo (Pb)
-- Cobre (Cu)
-- Cromo (Cr)
-- Ferro (Fe)
-- Manganês (Mn)
-- Mercúrio (Hg)
-- Níquel (Ni)
-- Zinco (Zn)
 
 ## Referências
 
 - **Fonte dos dados:** IMASUL - Instituto de Meio Ambiente de Mato Grosso do Sul
 - **Referência normativa:** Resolução CONAMA nº 357/2005
 - **Classe de água:** Doce Classe 1
-
-## Licença
-
-GPL-3
 
 ## Contribuição
 
