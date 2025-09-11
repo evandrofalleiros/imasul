@@ -1,3 +1,7 @@
+#' @importFrom magrittr %>%
+#' @export
+magrittr::`%>%`
+
 #' Listar Metais Disponíveis
 #'
 #' Retorna uma lista dos metais disponíveis no dataset com seus nomes

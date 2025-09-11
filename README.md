@@ -208,7 +208,7 @@ citation("imasul")
 ## Contato
 
 - **Autor**: Evandro Falleiros
-- **Email**: evandro.falleiros@pgrn.uems.br
+- **Email**: evandro.falleiros@ifms.edu.br
 - **GitHub**: [https://github.com/evandrofalleiros/imasul](https://github.com/evandrofalleiros/imasul)
 pontos <- mapear_pontos(dados, "cadmio_total_mg_L_Cd")
 ```

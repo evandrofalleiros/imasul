@@ -1,7 +1,3 @@
-#' @importFrom magrittr %>%
-#' @export
-magrittr::`%>%`
-
 #' Dados de Monitoramento de Metais em Águas - Mato Grosso do Sul
 #'
 #' Esta função carrega os dados brutos de monitoramento de metais em águas
@@ -77,11 +73,11 @@ carregar_dados_imasul <- function(caminho_arquivo = NULL, incluir_coordenadas = 
       )
       
       # Fazer join com os dados principais
-      dados <- dados %>%
-        dplyr::left_join(
-          pontos,
-          by = c("codigo_imasul" = "CODIGO_DO_PONTO")
-        )
+      dados <- dplyr::left_join(
+        dados,
+        pontos,
+        by = c("codigo_imasul" = "CODIGO_DO_PONTO")
+      )
     } else {
       warning("Arquivo de pontos não encontrado. Coordenadas não incluídas.")
     }
@@ -89,25 +85,113 @@ carregar_dados_imasul <- function(caminho_arquivo = NULL, incluir_coordenadas = 
   
   # Limpeza dos dados
   if (limpar_dados) {
-    dados <- dados %>%
-      dplyr::mutate(
-        # Garantir que data_coleta seja Date
-        data_coleta = as.Date(data_coleta),
-        
-        # Remover espaços em branco das colunas de texto
-        dplyr::across(where(is.character), ~trimws(.)),
-        
-        # Converter valores de metais para numérico, tratando <LQ e N/A
-        dplyr::across(
-          dplyr::contains("_total_mg_L"), 
-          ~dplyr::case_when(
-            . %in% c("<LQ", "N/A", "") ~ NA_real_,
-            TRUE ~ as.numeric(.)
-          )
+    # Aplicar mutações
+    dados <- dplyr::mutate(
+      dados,
+      # Garantir que data_coleta seja Date
+      data_coleta = as.Date(data_coleta),
+      # Remover espaços em branco das colunas de texto
+      dplyr::across(where(is.character), ~trimws(.)),
+      # Converter valores de metais para numérico, tratando <LQ e N/A
+      dplyr::across(
+        dplyr::contains("_total_mg_L"), 
+        ~dplyr::case_when(
+          . %in% c("<LQ", "N/A", "") ~ NA_real_,
+          TRUE ~ as.numeric(.)
         )
-      ) %>%
-      # Remover linhas completamente vazias
-      dplyr::filter(!is.na(codigo_imasul))
+      )
+    )
+    
+    # Remover linhas completamente vazias
+    dados <- dplyr::filter(dados, !is.na(codigo_imasul))
+  }
+
+  message("Dados carregados com sucesso! ", nrow(dados), " registros encontrados.")
+  return(dados)
+}
+carregar_dados_imasul <- function(caminho_arquivo = NULL, incluir_coordenadas = TRUE, limpar_dados = TRUE) {
+  
+  # Carregar dados de monitoramento
+  if (is.null(caminho_arquivo)) {
+    # Tentar carregar do pacote primeiro
+    caminho_arquivo <- system.file("csv", "resultados_metais_2011_2022.csv", package = "imasul")
+    
+    if (!file.exists(caminho_arquivo)) {
+      # Fallback para caminho local
+      caminho_arquivo <- file.path("csv", "resultados_metais_2011_2022.csv")
+    }
+  }
+  
+  if (!file.exists(caminho_arquivo)) {
+    stop("Arquivo de dados não encontrado: ", caminho_arquivo)
+  }
+  
+  # Carregar dados principais
+  dados <- readr::read_csv(
+    caminho_arquivo,
+    col_types = readr::cols(
+      regiao_hidrografica = readr::col_character(),
+      codigo_imasul = readr::col_character(),
+      data_coleta = readr::col_date(format = "%d/%m/%Y"),
+      hora = readr::col_time(format = "%H:%M"),
+      .default = readr::col_character()
+    ),
+    locale = readr::locale(encoding = "UTF-8")
+  )
+  
+  # Carregar dados dos pontos se solicitado
+  if (incluir_coordenadas) {
+    caminho_pontos <- system.file("csv", "pontos_resultados_metais.csv", package = "imasul")
+    
+    if (!file.exists(caminho_pontos)) {
+      caminho_pontos <- file.path("csv", "pontos_resultados_metais.csv")
+    }
+    
+    if (file.exists(caminho_pontos)) {
+      pontos <- readr::read_csv(
+        caminho_pontos,
+        col_types = readr::cols(
+          CODIGO_DO_PONTO = readr::col_character(),
+          LATITUDE = readr::col_double(),
+          LONGITUDE = readr::col_double(),
+          DESCRICAO_DO_LOCAL = readr::col_character(),
+          REGIAO_HIDROGRAFICA = readr::col_character()
+        ),
+        locale = readr::locale(encoding = "UTF-8")
+      )
+      
+      # Fazer join com os dados principais
+      dados <- dplyr::left_join(
+        dados,
+        pontos,
+        by = c("codigo_imasul" = "CODIGO_DO_PONTO")
+      )
+    } else {
+      warning("Arquivo de pontos não encontrado. Coordenadas não incluídas.")
+    }
+  }
+  
+  # Limpeza dos dados
+  if (limpar_dados) {
+    # Aplicar mutações
+    dados <- dplyr::mutate(
+      dados,
+      # Garantir que data_coleta seja Date
+      data_coleta = as.Date(data_coleta),
+      # Remover espaços em branco das colunas de texto
+      dplyr::across(where(is.character), ~trimws(.)),
+      # Converter valores de metais para numérico, tratando <LQ e N/A
+      dplyr::across(
+        dplyr::contains("_total_mg_L"), 
+        ~dplyr::case_when(
+          . %in% c("<LQ", "N/A", "") ~ NA_real_,
+          TRUE ~ as.numeric(.)
+        )
+      )
+    )
+    
+    # Remover linhas completamente vazias
+    dados <- dplyr::filter(dados, !is.na(codigo_imasul))
   }
 
   message("Dados carregados com sucesso! ", nrow(dados), " registros encontrados.")
