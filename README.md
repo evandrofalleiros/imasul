@@ -215,7 +215,7 @@ citation("imasul")
 ## Referências
 
 - **Fonte dos dados:** [IMASUL - Instituto de Meio Ambiente de Mato Grosso do Sul](https://www.imasul.ms.gov.br/wp-content/uploads/2025/04/Resultado-de-metais-RH-Paraguai-e-Parana-2011-a-2022.pdf)
-- **Referência normativa:** Resolução CONAMA nº 357/2005
+- **Referência normativa:** [Resolução CONAMA nº 357/2005](https://conama.mma.gov.br/?option=com_sisconama&task=arquivo.download&id=450)
 - **Classe de água:** Doce Classe 1
 
 ## Contribuição
