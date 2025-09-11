@@ -1,0 +1,18 @@
+Package: pacote-dados-r
+Type: Package
+Title: Pacote para Gerenciamento de Dados em R
+Version: 0.1.0
+Author: Seu Nome
+Maintainer: Seu Nome <seuemail@exemplo.com>
+Description: Este pacote fornece funções para o gerenciamento e manipulação de dados, incluindo a importação, processamento e exportação de conjuntos de dados.
+License: MIT
+Imports:
+    dplyr,
+    tidyr,
+    readr
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+Encoding: UTF-8
+LazyData: true

@@ -1,0 +1,66 @@
+CODIGO_DO_PONTO,LATITUDE,LONGITUDE,DESCRICAO_DO_LOCAL,REGIAO_HIDROGRAFICA
+00MS13AB0019,-22.232200,-54.841700,"Córrego Água Boa, Na nascente principal (chácara)",PARANÁ
+00MS13AB2000,-22.399399,-54.782782,"Córrego Água Boa, Na foz",PARANÁ
+00MS13BL2024,-22.489167,-53.326389,"Córrego Baile, A jusante 200m da piscicultura na Fazenda Nossa Senhora Aparecida",PARANÁ
+00MS13BL2048,-22.306439,-53.396385,"Córrego Baile, A montante da ponte da BR - 376",PARANÁ
+00MS13BL2052,-22.277802,-53.393092,"Córrego Baile, A montante 50m do lançamento do frigorífico Independência",PARANÁ
+00MS13BR2080,-21.931389,-54.495278,"Rio Brilhante, A jusante da foz do Córrego Laranja Doce",PARANÁ
+00MS13BR2128,-21.933333,-54.647500,"Rio Brilhante, A jusante da foz do Córrego Sardinha",PARANÁ
+00MS13BR2267,-21.484180,-55.159668,"Rio Brilhante, Na ponte da MS-162 que liga Sidrolândia – Maracaju",PARANÁ
+00MS13DR2000,-21.959411,-54.231082,"Rio Dourados, Na foz",PARANÁ
+00MS13DR2102,-22.356389,-54.521667,"Rio Dourados, Jusante da cidade de Fátima do Sul",PARANÁ
+00MS13DR2106,-22.403611,-54.524722,"Rio Dourados, Montante da cidade de Fátima do Sul",PARANÁ
+00MS13DR2150,-22.401702,-54.783598,"Rio Dourados, A jusante do Córrego Água Boa",PARANÁ
+00MS13DR2153,-22.398682,-54.793270,"Rio Dourados, Na captação da Sanesul",PARANÁ
+00MS13DR2250,-22.213611,-55.327500,"Rio Dourados, Jusante da foz do Rio São João",PARANÁ
+00MS13DR2252,-22.211097,-55.331705,"Rio Dourados, Montante da foz Rio São João",PARANÁ
+00MS13DR2364,-22.147117,-55.869819,"Rio Dourados, Na Colônia Militar dos Dourados",PARANÁ
+00MS13GR2101,-22.545556,-54.025000,"Rio Guiraí, Na ponte da Rod MS-141, entre Naviraí e Ivinhema",PARANÁ
+00MS13IV2000,-23.211100,-53.742802,"Rio Ivinhema, Na foz",PARANÁ
+00MS13IV2142,-22.381667,-53.531944,"Rio Ivinhema, Na ponte da BR-376 que liga Ivinhema à Nova Andradina",PARANÁ
+00MS13IV2237,-21.878895,-53.893594,"Rio Ivinhema, Na confluência dos Rios Vacaria e Brilhante",PARANÁ
+00MS13LA2021,-23.138731,-53.805933,"Rio Laranjaí, Na ponte da estrada que dá acesso à fazenda Vaca Branca",PARANÁ
+00MS13SJ2000,-22.212500,-55.333333,"Rio São João, Na foz",PARANÁ
+00MS13SM2000,-21.839239,-54.836856,"Rio Santa Maria, Na foz",PARANÁ
+00MS13ST2018,-21.394201,-55.342805,"Rio Santo Antônio, Na ponte da estrada vicinal que liga a Usina MR à Maracaju",PARANÁ
+00MS13VA2143,-21.526105,-54.679200,"Rio Vacaria, A jusante da foz do Córrego Passatempo",PARANÁ
+00MS13VA2167,-21.363333,-54.698889,"Rio Vacaria, A montante da foz do Rio Serrote",PARANÁ
+00MS13VA2234,-21.020791,-54.936091,"Rio Vacaria, A jusante da foz do Córrego Brejão",PARANÁ
+00MS21PQ2000,-17.370342,-55.583895,"Rio Piquiri, Na foz",PARAGUAI
+00MS22CB2077,-17.622878,-56.965833,"Rio Cuiabá, Na localidade de Porto do Alegre (Retiro da Fazenda Recreio)",PARAGUAI
+00MS22CB2156,-17.309400,-56.725592,"Rio Cuiabá, A jusante da foz do Rio Itiquira",PARAGUAI
+00MS22CB2158,-17.303333,-56.719722,"Rio Cuiabá, A montante da foz do Rio Itiquira",PARAGUAI
+00MS22IT2000,-17.318288,-56.713289,"Rio Itiquira, Na foz",PARAGUAI
+00MS22IT2072,-17.291667,-56.387222,"Rio Itiquira, No Parque São José do Piquiri",PARAGUAI
+00MS22IT2232,-17.365268,-55.608619,"Rio Itiquira, A jusante da foz do Rio Piquiri",PARAGUAI
+00MS22IT2234,-17.365000,-55.600278,"Rio Itiquira, A montante da foz do Rio Piquiri",PARAGUAI
+00MS22PA2135,-19.003056,-57.577500,"Rio Paraguai, A jusante da Marinha Mercante - Corumbá",PARAGUAI
+00MS22PA2140,-18.998611,-57.616667,"Rio Paraguai, A montante da captação de Ladário",PARAGUAI
+00MS22PA2145,-18.988333,-57.659167,"Rio Paraguai, A montante da captação de água da cidade de Corumbá",PARAGUAI
+00MS22PA2161,-18.391194,-57.377861,"Rio Paraguai, Na Estação São Francisco - ANA",PARAGUAI
+00MS22PA2194,-18.145730,-57.385240,"Rio Paraguai, A Montante do Porto São Pedro",PARAGUAI
+00MS22PA2214,-18.037468,-57.486740,"Rio Paraguai, Na localidade de Amolar (pesqueiro Serra Negra)",PARAGUAI
+00MS22PA2366,-17.886069,-57.472202,"Rio Paraguai, A montante da foz do Rio São Lourenço",PARAGUAI
+00MS22TG2000,-18.993581,-57.665757,"Rio Paraguai, Canal do Tamengo - na foz",PARAGUAI
+00MS24GA2002,-19.361000,-54.992000,"Córrego do Garimpo, Na ponte da Rodovia MS-080",PARAGUAI
+00MS24NE2008,-19.285608,-57.055790,"Rio Negro, Na ponte da Rod MS-184 (Morro do Azeite/Curva do Leque-Faz. Baú)",PARAGUAI
+00MS24NE2127,-19.605833,-56.335278,"Rio Negro, No pesqueiro da Fazenda Tupãceretã (Ninhal)",PARAGUAI
+00MS24NE2174,-19.588333,-56.092500,"Rio Negro, Na ponte da Rodovia MS-170 (Fazenda Barra Mansa)",PARAGUAI
+00MS24NE2202,-19.653889,-55.959167,"Rio Negro, A jusante da foz doRio Taboco",PARAGUAI
+00MS24NE2435,-19.353889,-55.015556,"Rio Negro, A jusante do perímetro urbano/periférico da cidade de Rio Negro",PARAGUAI
+00MS24NE2461,-19.488056,-55.044722,"Rio Negro, A montante do perímetro urbano/periférico da cidade de Rio Negro",PARAGUAI
+00MS24NG2002,-19.339000,-55.052000,"Rio Negrinho, Na ponte da Rodovia MS-419",PARAGUAI
+00MS24PE2005,-19.387000,-54.979000,"Rio do Peixe, Na ponte da Rodovia MS-080",PARAGUAI
+00MS25NA1000,-20.926111,-57.842197,"Rio Nabileque, Na foz",PARAGUAI
+00MS25NA1068,-20.573333,-56.605000,"Rio Nabileque, A montante da foz do Rio Naitaca (Fazenda Genipapo)",PARAGUAI
+00MS25NA1271,-19.722181,-57.543922,"Rio Nabileque, Na boca do Nabileque",PARAGUAI
+00MS25PA2024,-21.104444,-57.849722,"Rio Paraguai, A jusante do destacamento Militar de Barranco Branco",PARAGUAI
+00MS25PA2207,-19.945280,-57.829714,"Rio Paraguai, A jusante do Forte Coimbra",PARAGUAI
+00MS25RB1000,-20.973333,-57.810833,"Rio Branco, Na foz",PARAGUAI
+00MS26AP2000,-22.090556,-57.982222,"Rio Apa, Na foz",PARAGUAI
+00MS26AP2161,-22.233889,-57.060000,"Rio Apa, A jusante da foz do Rio Caracol",PARAGUAI
+00MS26AP2273,-22.136667,-56.523056,"Rio Apa, A jusante do perímetro urbano/periférico da cidade de Bela Vista",PARAGUAI
+00MS26AP2276,-22.108056,-56.516944,"Rio Apa, A montante do perímetro urbano/periférico da cidade de Bela Vista",PARAGUAI
+00MS26CL1075,-21.986278,-56.874389,"Rio Caracol, Na ponte da Rod. MS-384",PARAGUAI
+00MS26PA2000,-22.095024,-57.993588,"Rio Paraguai, Na confluência com o Rio Apa",PARAGUAI
+00MS26PA2060,-21.714202,-57.909211,"Rio Paraguai, A jusante do perímetro urbano/periférico da cidade de Porto Murtinho",PARAGUAI

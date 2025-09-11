@@ -1,0 +1,407 @@
+---
+title: "Introdução ao Pacote imasul"
+author: "Evandro Falleiros"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introdução ao Pacote imasul}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Visão Geral
+
+O pacote `imasul` fornece acesso aos dados de monitoramento de metais pesados em águas superficiais coletados pelo Instituto de Meio Ambiente de Mato Grosso do Sul (IMASUL) entre 2011 e 2022. Este documento apresenta as principais funcionalidades do pacote e exemplos práticos de uso.
+
+## Carregamento dos Dados
+
+```{r carregamento}
+library(imasul)
+library(dplyr)
+library(ggplot2)
+
+# Carregar dados com coordenadas geográficas
+dados <- carregar_dados_imasul(incluir_coordenadas = TRUE)
+
+# Visualizar estrutura dos dados
+str(dados)
+```
+
+```{r resumo-dados}
+# Resumo básico dos dados
+cat("Período de monitoramento:", as.character(min(dados$data_coleta, na.rm = TRUE)), 
+    "a", as.character(max(dados$data_coleta, na.rm = TRUE)), "
+")
+cat("Número de pontos:", length(unique(dados$codigo_imasul)), "
+")
+cat("Número total de amostras:", nrow(dados), "
+")
+cat("Regiões hidrográficas:", paste(unique(dados$regiao_hidrografica), collapse = ", "), "
+")
+```
+
+## Metais Disponíveis
+
+```{r metais-disponiveis}
+# Listar metais monitorados
+metais <- listar_metais()
+print(metais)
+```
+
+## Análise de Conformidade com CONAMA
+
+### Limites Estabelecidos
+
+```{r limites-conama}
+# Consultar limites CONAMA 357/2005
+limites <- limites_conama()
+print(limites)
+```
+
+### Verificação de Conformidade para Cádmio
+
+```{r conformidade-cadmio}
+# Verificar conformidade para cádmio
+dados_cd <- verificar_conformidade(dados, "cadmio_total_mg_L_Cd")
+
+# Resumir status de conformidade
+table(dados_cd$status_cadmio_total_mg_L_Cd)
+
+# Calcular percentual de conformidade
+conformidade <- dados_cd %>%
+  filter(!is.na(status_cadmio_total_mg_L_Cd)) %>%
+  count(status_cadmio_total_mg_L_Cd) %>%
+  mutate(percentual = round(n / sum(n) * 100, 1))
+
+print(conformidade)
+```
+
+### Relatório Completo de Conformidade
+
+```{r relatorio-conformidade}
+# Gerar relatório completo
+relatorio <- relatorio_conformidade(dados)
+
+# Resumo geral
+cat("Resumo Geral de Conformidade:
+")
+cat("Total de metais analisados:", relatorio$resumo_geral$total_metais, "
+")
+cat("Metais conformes:", relatorio$resumo_geral$metais_conformes, "
+")
+cat("Metais não conformes:", relatorio$resumo_geral$metais_nao_conformes, "
+")
+cat("Percentual de conformidade:", round(relatorio$resumo_geral$percentual_conformidade, 1), "%
+")
+```
+
+## Análise Estatística
+
+### Resumo Estatístico do Ferro
+
+```{r resumo-ferro}
+# Análise detalhada do ferro
+resumo_fe <- resumo_metal(dados, "ferro_total_mg_L_Fe")
+
+cat("Estatísticas do Ferro (Fe):
+")
+cat("Número de amostras:", resumo_fe$n_amostras, "
+")
+cat("Número de pontos:", resumo_fe$n_pontos, "
+")
+cat("Média:", round(resumo_fe$media, 3), "mg/L
+")
+cat("Mediana:", round(resumo_fe$mediana, 3), "mg/L
+")
+cat("Máximo:", round(resumo_fe$maximo, 3), "mg/L
+")
+cat("Limite CONAMA:", resumo_fe$limite_conama, "mg/L
+")
+cat("Amostras acima do limite:", resumo_fe$amostras_acima_limite, 
+    "(", round(resumo_fe$percentual_acima_limite, 1), "%)
+")
+```
+
+### Estatísticas por Região Hidrográfica
+
+```{r stats-regiao}
+# Comparar ferro entre regiões
+stats_regiao <- estatisticas_por_regiao(dados, "ferro_total_mg_L_Fe")
+print(stats_regiao)
+```
+
+## Análise Temporal
+
+### Tendência Anual do Ferro
+
+```{r analise-temporal}
+# Análise temporal anual
+temporal_fe <- analisar_temporal(dados, "ferro_total_mg_L_Fe", "ano")
+
+# Visualizar tendência
+ggplot(temporal_fe, aes(x = data_agrupada, y = media)) +
+  geom_line(color = "blue", size = 1) +
+  geom_point(color = "red", size = 2) +
+  geom_hline(yintercept = 0.3, color = "red", linetype = "dashed", 
+             alpha = 0.7) +
+  labs(
+    title = "Concentração Média de Ferro ao Longo dos Anos",
+    subtitle = "Linha vermelha tracejada: Limite CONAMA (0,3 mg/L)",
+    x = "Ano",
+    y = "Concentração Média (mg/L)",
+    caption = "Fonte: IMASUL"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5)
+  )
+```
+
+### Análise Mensal (Sazonalidade)
+
+```{r sazonalidade}
+# Análise mensal para identificar padrões sazonais
+temporal_mes <- analisar_temporal(dados, "ferro_total_mg_L_Fe", "mes")
+
+# Adicionar nome do mês
+temporal_mes <- temporal_mes %>%
+  mutate(
+    mes_nome = month.abb[mes],
+    mes_nome = factor(mes_nome, levels = month.abb)
+  )
+
+# Boxplot por mês
+dados_mes <- dados %>%
+  filter(!is.na(ferro_total_mg_L_Fe)) %>%
+  mutate(
+    mes = lubridate::month(data_coleta),
+    mes_nome = month.abb[mes],
+    mes_nome = factor(mes_nome, levels = month.abb)
+  )
+
+ggplot(dados_mes, aes(x = mes_nome, y = ferro_total_mg_L_Fe)) +
+  geom_boxplot(fill = "lightblue", alpha = 0.7) +
+  geom_hline(yintercept = 0.3, color = "red", linetype = "dashed") +
+  labs(
+    title = "Distribuição Mensal das Concentrações de Ferro",
+    subtitle = "Linha vermelha: Limite CONAMA (0,3 mg/L)",
+    x = "Mês",
+    y = "Concentração de Ferro (mg/L)",
+    caption = "Fonte: IMASUL"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+## Identificação de Pontos Críticos
+
+```{r pontos-criticos}
+# Identificar pontos com maior frequência de não conformidade para ferro
+criticos_fe <- identificar_pontos_criticos(dados, "ferro_total_mg_L_Fe", 30)
+
+if (nrow(criticos_fe) > 0) {
+  cat("Pontos críticos para ferro (>30% de não conformidade):
+")
+  criticos_fe %>%
+    select(codigo_imasul, regiao_hidrografica, n_amostras, 
+           percentual_nao_conforme, classificacao, DESCRICAO_DO_LOCAL) %>%
+    arrange(desc(percentual_nao_conforme)) %>%
+    print()
+} else {
+  cat("Nenhum ponto crítico identificado para ferro com o critério estabelecido.
+")
+}
+```
+
+## Análise Espacial Básica
+
+```{r analise-espacial}
+# Preparar dados para mapeamento
+pontos_mapa <- mapear_pontos(dados, "ferro_total_mg_L_Fe")
+
+# Resumo por região
+pontos_resumo <- pontos_mapa %>%
+  group_by(regiao_hidrografica) %>%
+  summarise(
+    n_pontos = n(),
+    media_fe = round(mean(media_ferro_total_mg_L_Fe, na.rm = TRUE), 3),
+    max_fe = round(max(max_ferro_total_mg_L_Fe, na.rm = TRUE), 3),
+    .groups = "drop"
+  )
+
+print(pontos_resumo)
+```
+
+## Comparação Entre Metais
+
+```{r comparacao-metais}
+# Comparar percentual de não conformidade entre metais
+metais_lista <- c("ferro_total_mg_L_Fe", "manganes_total_mg_L_Mn", 
+                  "aluminio_total_mg_L_Al", "cobre_total_mg_L_Cu")
+
+comparacao <- data.frame()
+
+for (metal in metais_lista) {
+  if (metal %in% colnames(dados)) {
+    resumo <- resumo_metal(dados, metal)
+    comparacao <- rbind(comparacao, data.frame(
+      Metal = metal,
+      N_Amostras = resumo$n_amostras,
+      Percentual_Acima_Limite = round(resumo$percentual_acima_limite, 1),
+      Media = round(resumo$media, 4),
+      Limite_CONAMA = resumo$limite_conama
+    ))
+  }
+}
+
+print(comparacao)
+```
+
+## Visualização Avançada
+
+```{r viz-avancada}
+# Gráfico de correlação entre ferro e manganês
+if (all(c("ferro_total_mg_L_Fe", "manganes_total_mg_L_Mn") %in% colnames(dados))) {
+  dados_corr <- dados %>%
+    filter(!is.na(ferro_total_mg_L_Fe) & !is.na(manganes_total_mg_L_Mn))
+  
+  ggplot(dados_corr, aes(x = ferro_total_mg_L_Fe, y = manganes_total_mg_L_Mn)) +
+    geom_point(aes(color = regiao_hidrografica), alpha = 0.6) +
+    geom_smooth(method = "lm", se = TRUE, color = "black") +
+    scale_x_log10() +
+    scale_y_log10() +
+    labs(
+      title = "Correlação entre Ferro e Manganês",
+      x = "Ferro (mg/L) - escala log",
+      y = "Manganês (mg/L) - escala log",
+      color = "Região Hidrográfica",
+      caption = "Fonte: IMASUL"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      legend.position = "bottom"
+    )
+}
+```
+
+## Conclusões
+
+Este pacote oferece ferramentas abrangentes para análise dos dados de monitoramento de metais do IMASUL, incluindo:
+
+1. **Carregamento facilitado** dos dados com integração de coordenadas
+2. **Verificação automática** de conformidade com padrões CONAMA
+3. **Análises estatísticas** detalhadas por metal e região
+4. **Identificação** de pontos críticos de monitoramento
+5. **Análises temporais** para detecção de tendências
+6. **Ferramentas de visualização** para comunicação dos resultados
+
+Para mais informações e exemplos avançados, consulte a documentação das funções individuais usando `?nome_da_funcao`.
+
+# Introdução ao Pacote imasul
+
+O pacote `imasul` fornece acesso aos dados de monitoramento de metais em águas superficiais de Mato Grosso do Sul, coletados pelo Instituto de Meio Ambiente de Mato Grosso do Sul (IMASUL).
+
+## Instalação
+
+```{r eval=FALSE}
+# Instalar do GitHub
+devtools::install_github("SEU_USERNAME/imasul")
+
+# Carregar o pacote
+library(imasul)
+```
+
+## Carregando os Dados
+
+```{r}
+# Carregar dados incluídos no pacote
+dados <- carregar_dados_imasul()
+
+# Visualizar estrutura dos dados
+str(dados)
+```
+
+## Análise Estatística Básica
+
+```{r}
+# Resumo estatístico de um metal
+resumo <- resumo_metal(dados, "cadmio_total_mg_L_Cd")
+print(resumo)
+```
+
+## Verificação de Conformidade com CONAMA
+
+```{r}
+# Verificar conformidade com limites normativos
+limites <- limites_conama()
+print(limites)
+
+# Adicionar análise de conformidade aos dados
+dados_conforme <- verificar_conformidade(dados, "cadmio_total_mg_L_Cd")
+
+# Ver distribuição de conformidade
+table(dados_conforme$status_cadmio_total_mg_L_Cd)
+```
+
+## Análise Temporal
+
+```{r}
+# Análise temporal por ano
+temporal <- analisar_temporal(dados, "cadmio_total_mg_L_Cd", "ano")
+
+# Visualizar tendência
+plot(temporal$data_agrupada, temporal$media, type = "l",
+     xlab = "Ano", ylab = "Concentração média (mg/L)",
+     main = "Evolução da concentração de Cádmio")
+```
+
+## Mapeamento dos Pontos
+
+```{r}
+# Preparar dados para mapeamento
+pontos <- mapear_pontos(dados, "cadmio_total_mg_L_Cd")
+head(pontos)
+```
+
+## Relatório de Conformidade
+
+```{r}
+# Gerar relatório completo
+relatorio <- relatorio_conformidade(dados)
+
+# Resumo geral
+print(relatorio$resumo_geral)
+
+# Análise por metal
+lapply(relatorio$analises_por_metal, function(x) {
+  cat("\nMetal:", x$metal, "\n")
+  cat("Amostras:", x$n_amostras, "\n")
+  cat("Percentual acima do limite:", round(x$percentual_acima, 2), "%\n")
+  cat("Conforme:", ifelse(x$conforme, "Sim", "Não"), "\n")
+})
+```
+
+## Referências
+
+- **Fonte dos dados:** IMASUL - Instituto de Meio Ambiente de Mato Grosso do Sul
+- **Referência normativa:** Resolução CONAMA nº 357/2005
+- **Classe de água:** Doce Classe 1
+
+## Contribuição
+
+Contribuições são bem-vindas! Reporte bugs e sugestões em: https://github.com/SEU_USERNAME/imasul/issues
