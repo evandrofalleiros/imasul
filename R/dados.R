@@ -1,3 +1,7 @@
+#' @importFrom magrittr %>%
+#' @export
+magrittr::`%>%`
+
 #' Dados de Monitoramento de Metais em Águas - Mato Grosso do Sul
 #'
 #' Esta função carrega os dados brutos de monitoramento de metais em águas
