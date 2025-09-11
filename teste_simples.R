@@ -1,0 +1,5 @@
+library(imasul)
+dados <- carregar_dados_imasul()
+temporal <- analisar_temporal(dados, "ferro_total_mg_L_Fe", "ano")
+print(names(temporal))
+print("data_agrupada" %in% names(temporal))

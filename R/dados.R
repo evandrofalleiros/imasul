@@ -313,92 +313,138 @@ verificar_conformidade <- function(dados, metal) {
     stop("Limite CONAMA não encontrado para ", metal)
   }
 
-  dados <- dados %>%
-    dplyr::mutate(
-      !!paste0("limite_", metal) := limite,
-      !!paste0("status_", metal) := dplyr::case_when(
-        is.na(.data[[metal]]) ~ "Não analisado",
-        .data[[metal]] <= limite ~ "Conforme",
-        .data[[metal]] > limite ~ "Não conforme"
-      ),
-      !!paste0("excesso_", metal) := dplyr::case_when(
-        is.na(.data[[metal]]) ~ NA_real_,
-        .data[[metal]] > limite ~ .data[[metal]] - limite,
-        TRUE ~ 0
-      )
+  dados <- dplyr::mutate(
+    dados,
+    !!paste0("limite_", metal) := limite,
+    !!paste0("status_", metal) := dplyr::case_when(
+      is.na(.data[[metal]]) ~ "Não analisado",
+      .data[[metal]] <= limite ~ "Conforme",
+      .data[[metal]] > limite ~ "Não conforme"
+    ),
+    !!paste0("excesso_", metal) := dplyr::case_when(
+      is.na(.data[[metal]]) ~ NA_real_,
+      .data[[metal]] > limite ~ .data[[metal]] - limite,
+      TRUE ~ 0
     )
+  )
 
   return(dados)
 }
 
-#' Análise Temporal de Metais
+#' Análise Temporal dos Dados
 #'
-#' Realiza análise temporal dos dados de metais, incluindo tendências e sazonalidade.
+#' Realiza agregação temporal dos dados de monitoramento.
 #'
-#' @param dados Data.frame retornado por carregar_dados_imasul().
-#' @param metal Nome da coluna do metal.
-#' @param agrupamento Tipo de agrupamento temporal ("mes", "ano", "semestre").
-#' @return Data.frame com análise temporal.
+#' @param dados Data.frame com os dados de monitoramento.
+#' @param metal Nome da coluna do metal para análise.
+#' @param agrupamento Tipo de agrupamento temporal: "ano", "mes", "trimestre", "semestre".
+#' @return Data.frame com estatísticas agrupadas por período.
 #' @examples
 #' \dontrun{
 #' dados <- carregar_dados_imasul()
-#' temporal <- analisar_temporal(dados, "cadmio_total_mg_L_Cd", "ano")
-#' plot(temporal$data_agrupada, temporal$media, type = "l")
+#' temporal <- analisar_temporal(dados, "ferro_total_mg_L_Fe", "ano")
+#' ggplot(temporal, aes(x = data_agrupada, y = media)) + geom_line()
 #' }
 #' @export
-analisar_temporal <- function(dados, metal, agrupamento = "mes") {
-
+analisar_temporal <- function(dados, metal, agrupamento = "ano") {
+  
+  # Verificar se o metal existe nos dados
   if (!metal %in% colnames(dados)) {
-    stop("Coluna ", metal, " não encontrada nos dados.")
+    stop("Metal '", metal, "' não encontrado nos dados. Use listar_metais() para ver opções disponíveis.")
   }
-
-  # Criar coluna de agrupamento temporal
-  dados_temp <- dados %>%
-    dplyr::mutate(
-      ano = lubridate::year(data_coleta),
-      mes = lubridate::month(data_coleta),
-      semestre = dplyr::case_when(
-        mes <= 6 ~ 1,
-        TRUE ~ 2
-      )
-    )
-
-  # Definir agrupamento
+  
+  # Verificar se data_coleta existe
+  if (!"data_coleta" %in% colnames(dados)) {
+    stop("Coluna 'data_coleta' não encontrada nos dados.")
+  }
+  
+  # Filtrar dados válidos (não NA)
+  dados_validos <- dados[!is.na(dados[[metal]]) & !is.na(dados$data_coleta), ]
+  
+  if (nrow(dados_validos) == 0) {
+    stop("Nenhum dado válido encontrado para o metal especificado.")
+  }
+  
+  # Criar variável de agrupamento temporal
   if (agrupamento == "ano") {
-    grupo <- "ano"
+    dados_validos$periodo_temp <- format(dados_validos$data_coleta, "%Y")
+    dados_validos$data_agrupada <- as.Date(paste0(dados_validos$periodo_temp, "-01-01"))
   } else if (agrupamento == "mes") {
-    grupo <- c("ano", "mes")
+    dados_validos$periodo_temp <- format(dados_validos$data_coleta, "%Y-%m")
+    dados_validos$data_agrupada <- as.Date(paste0(dados_validos$periodo_temp, "-01"))
+  } else if (agrupamento == "trimestre") {
+    dados_validos$trimestre <- ceiling(as.numeric(format(dados_validos$data_coleta, "%m")) / 3)
+    dados_validos$periodo_temp <- paste0(format(dados_validos$data_coleta, "%Y"), "-T", dados_validos$trimestre)
+    dados_validos$data_agrupada <- as.Date(paste0(format(dados_validos$data_coleta, "%Y"), "-", 
+                                                   sprintf("%02d", (dados_validos$trimestre - 1) * 3 + 1), "-01"))
   } else if (agrupamento == "semestre") {
-    grupo <- c("ano", "semestre")
+    dados_validos$semestre <- ceiling(as.numeric(format(dados_validos$data_coleta, "%m")) / 6)
+    dados_validos$periodo_temp <- paste0(format(dados_validos$data_coleta, "%Y"), "-S", dados_validos$semestre)
+    dados_validos$data_agrupada <- as.Date(paste0(format(dados_validos$data_coleta, "%Y"), "-", 
+                                                   ifelse(dados_validos$semestre == 1, "01", "07"), "-01"))
   } else {
-    stop("Agrupamento deve ser 'ano', 'mes' ou 'semestre'")
+    stop("Agrupamento deve ser: 'ano', 'mes', 'trimestre' ou 'semestre'")
   }
-
-  # Agregar dados
-  resultado <- dados_temp %>%
-    dplyr::group_by(dplyr::across(dplyr::all_of(grupo))) %>%
-    dplyr::summarise(
-      media = mean(.data[[metal]], na.rm = TRUE),
-      mediana = stats::median(.data[[metal]], na.rm = TRUE),
-      maximo = max(.data[[metal]], na.rm = TRUE),
-      minimo = min(.data[[metal]], na.rm = TRUE),
-      n_amostras = sum(!is.na(.data[[metal]])),
-      n_pontos = dplyr::n_distinct(codigo_imasul[!is.na(.data[[metal]])]),
-      .groups = "drop"
-    )
-
-  # Adicionar data agrupada para plotagem
-  if (agrupamento == "ano") {
-    resultado <- resultado %>%
-      dplyr::mutate(data_agrupada = as.Date(paste0(ano, "-01-01")))
-  } else if (agrupamento == "mes") {
-    resultado <- resultado %>%
-      dplyr::mutate(data_agrupada = as.Date(paste(ano, mes, "01", sep = "-")))
-  } else {
-    resultado <- resultado %>%
-      dplyr::mutate(data_agrupada = as.Date(paste0(ano, "-", ifelse(semestre == 1, "01", "07"), "-01")))
-  }
-
+  
+  # Calcular estatísticas por período usando aggregate()
+  
+  # Média
+  media_periodo <- aggregate(dados_validos[[metal]], 
+                             by = list(periodo = dados_validos$periodo_temp,
+                                      data_agrupada = dados_validos$data_agrupada), 
+                             FUN = mean, na.rm = TRUE)
+  names(media_periodo)[3] <- "media"
+  
+  # Mediana
+  mediana_periodo <- aggregate(dados_validos[[metal]], 
+                               by = list(periodo = dados_validos$periodo_temp,
+                                        data_agrupada = dados_validos$data_agrupada), 
+                               FUN = median, na.rm = TRUE)
+  names(mediana_periodo)[3] <- "mediana"
+  
+  # Desvio padrão
+  sd_periodo <- aggregate(dados_validos[[metal]], 
+                          by = list(periodo = dados_validos$periodo_temp,
+                                   data_agrupada = dados_validos$data_agrupada), 
+                          FUN = sd, na.rm = TRUE)
+  names(sd_periodo)[3] <- "desvio_padrao"
+  
+  # Mínimo
+  min_periodo <- aggregate(dados_validos[[metal]], 
+                           by = list(periodo = dados_validos$periodo_temp,
+                                    data_agrupada = dados_validos$data_agrupada), 
+                           FUN = min, na.rm = TRUE)
+  names(min_periodo)[3] <- "minimo"
+  
+  # Máximo
+  max_periodo <- aggregate(dados_validos[[metal]], 
+                           by = list(periodo = dados_validos$periodo_temp,
+                                    data_agrupada = dados_validos$data_agrupada), 
+                           FUN = max, na.rm = TRUE)
+  names(max_periodo)[3] <- "maximo"
+  
+  # Número de observações
+  n_periodo <- aggregate(dados_validos[[metal]], 
+                         by = list(periodo = dados_validos$periodo_temp,
+                                  data_agrupada = dados_validos$data_agrupada), 
+                         FUN = length)
+  names(n_periodo)[3] <- "n_observacoes"
+  
+  # Combinar todas as estatísticas
+  resultado <- merge(media_periodo, mediana_periodo, by = c("periodo", "data_agrupada"))
+  resultado <- merge(resultado, sd_periodo, by = c("periodo", "data_agrupada"))
+  resultado <- merge(resultado, min_periodo, by = c("periodo", "data_agrupada"))
+  resultado <- merge(resultado, max_periodo, by = c("periodo", "data_agrupada"))
+  resultado <- merge(resultado, n_periodo, by = c("periodo", "data_agrupada"))
+  
+  # Ordenar por data
+  resultado <- resultado[order(resultado$data_agrupada), ]
+  
+  # Adicionar informações sobre o metal e agrupamento
+  attr(resultado, "metal") <- metal
+  attr(resultado, "agrupamento") <- agrupamento
+  attr(resultado, "total_registros") <- nrow(dados_validos)
+  
   return(resultado)
 }
 
@@ -424,34 +470,33 @@ mapear_pontos <- function(dados, metal = NULL) {
   }
   
   # Agrupar por ponto
-  pontos <- dados %>%
-    dplyr::filter(!is.na(LATITUDE) & !is.na(LONGITUDE)) %>%
-    dplyr::group_by(codigo_imasul, DESCRICAO_DO_LOCAL, regiao_hidrografica) %>%
-    dplyr::summarise(
-      latitude = dplyr::first(LATITUDE),
-      longitude = dplyr::first(LONGITUDE),
-      n_amostras = dplyr::n(),
-      data_primeira = min(data_coleta, na.rm = TRUE),
-      data_ultima = max(data_coleta, na.rm = TRUE),
-      .groups = "drop"
-    )
+  dados_filtrados <- dplyr::filter(dados, !is.na(LATITUDE) & !is.na(LONGITUDE))
+  dados_agrupados <- dplyr::group_by(dados_filtrados, codigo_imasul, DESCRICAO_DO_LOCAL, regiao_hidrografica)
+  pontos <- dplyr::summarise(
+    dados_agrupados,
+    latitude = dplyr::first(LATITUDE),
+    longitude = dplyr::first(LONGITUDE),
+    n_amostras = dplyr::n(),
+    data_primeira = min(data_coleta, na.rm = TRUE),
+    data_ultima = max(data_coleta, na.rm = TRUE),
+    .groups = "drop"
+  )
 
   # Adicionar estatísticas do metal se especificado
   if (!is.null(metal) && metal %in% colnames(dados)) {
-    estatisticas_metal <- dados %>%
-      dplyr::filter(!is.na(.data[[metal]])) %>%
-      dplyr::group_by(codigo_imasul) %>%
-      dplyr::summarise(
-        !!paste0("media_", metal) := mean(.data[[metal]], na.rm = TRUE),
-        !!paste0("mediana_", metal) := median(.data[[metal]], na.rm = TRUE),
-        !!paste0("min_", metal) := min(.data[[metal]], na.rm = TRUE),
-        !!paste0("max_", metal) := max(.data[[metal]], na.rm = TRUE),
-        !!paste0("n_amostras_", metal) := dplyr::n(),
-        .groups = "drop"
-      )
+    dados_metal <- dplyr::filter(dados, !is.na(.data[[metal]]))
+    dados_metal_agrupados <- dplyr::group_by(dados_metal, codigo_imasul)
+    estatisticas_metal <- dplyr::summarise(
+      dados_metal_agrupados,
+      !!paste0("media_", metal) := mean(.data[[metal]], na.rm = TRUE),
+      !!paste0("mediana_", metal) := median(.data[[metal]], na.rm = TRUE),
+      !!paste0("min_", metal) := min(.data[[metal]], na.rm = TRUE),
+      !!paste0("max_", metal) := max(.data[[metal]], na.rm = TRUE),
+      !!paste0("n_amostras_", metal) := dplyr::n(),
+      .groups = "drop"
+    )
 
-    pontos <- pontos %>%
-      dplyr::left_join(estatisticas_metal, by = "codigo_imasul")
+    pontos <- dplyr::left_join(pontos, estatisticas_metal, by = "codigo_imasul")
   }
 
   return(pontos)
