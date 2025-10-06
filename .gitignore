@@ -27,3 +27,5 @@ cache/
 # Arquivos de configuração local
 .env
 .env.local
+# Ignore Google service account keys stored in backend/credentials
+backend/credentials/*.json

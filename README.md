@@ -31,11 +31,19 @@ O pacote inclui três datasets principais:
 ## Instalação
 
 ```r
-# Instalar do GitHub
-devtools::install_github("evandrofalleiros/imasul")
+# Instalar do GitHub (recomendado)
+if (!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+remotes::install_github("evandrofalleiros/imasul")
 
 # Carregar o pacote
 library(imasul)
+```
+
+Instalação de desenvolvimento (a partir do fonte local):
+
+```r
+# Supondo que este repositório foi clonado localmente em ./imasul
+remotes::install_local(".")
 ```
 
 ## Funcionalidades Principais
