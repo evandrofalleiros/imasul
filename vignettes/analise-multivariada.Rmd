@@ -1,0 +1,64 @@
+---
+title: "Análise multivariada com o pacote imasul"
+author: "Equipe IMASUL"
+output:
+  rmarkdown::html_vignette:
+    df_print: paged
+vignette: >
+  %\VignetteIndexEntry{Análise multivariada com o pacote imasul}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+## Introdução
+
+Esta vinheta demonstra como preparar dados do IMASUL para análises multivariadas
+(PCA e MANOVA) utilizando as funções `carregar_dados_imasul()` e
+`preparar_dados_multivariados()`.
+
+## Carregamento e preparação
+
+```{r}
+library(imasul)
+library(vegan)
+
+# Carregar dados unificados (inclui coordenadas e região)
+dados_completos <- carregar_dados_imasul(incluir_coordenadas = TRUE)
+
+# Preparar dados para PCA/MANOVA
+prep <- preparar_dados_multivariados(
+  dados_completos,
+  col_codigo = "codigo_imasul",
+  col_regiao = "REGIAO_HIDROGRAFICA",
+  max_na_metais = 5,
+  imputacao = "media"
+)
+
+str(prep, 1)
+```
+
+## PCA
+
+```{r}
+dados_std <- vegan::decostand(prep$matriz, method = "standardize")
+pca <- vegan::rda(dados_std)
+summary(pca)
+```
+
+## MANOVA (clássica)
+
+```{r}
+man <- manova(as.matrix(dados_std) ~ prep$grupos)
+summary(man, test = "Pillai")
+```
+
+## Observações
+
+- A função `preparar_dados_multivariados()` trata valores "<LQ", agrega por ponto
+  quando necessário, filtra linhas com muitos NAs e permite imputação simples.
+- Ajuste os parâmetros `max_na_metais` e `imputacao` conforme seu objetivo analítico.
+
