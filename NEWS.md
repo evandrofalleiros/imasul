@@ -2,6 +2,13 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [1.1.0] - 2025-10-06
+
+### Adicionado
+- Função `preparar_dados_multivariados()` para preparar matriz de metais e vetor de grupos (tratamento de "<LQ", conversão numérica, agregação por ponto, filtro de NAs, imputação).
+- Vinheta "Análise multivariada com o pacote imasul" demonstrando PCA e MANOVA.
+- Export da nova função no NAMESPACE.
+
 ## [1.0.0] - 2025-09-11
 
 ### Adicionado
